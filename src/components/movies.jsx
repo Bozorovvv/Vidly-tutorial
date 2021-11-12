@@ -30,16 +30,18 @@ class Movies extends Component {
     this.setState({ movies, genres });
   }
 
-  handleDelete = async (movie) => {
+  handleDelete = async (id) => {
     const originalMovies = this.state.movies;
-    const movies = originalMovies.filter((m) => m._id !== movie._id);
+    const movies = originalMovies.filter((m) => m._id !== id);
+
     this.setState({ movies });
 
     try {
-      await deleteMovie(movie._id);
+      await deleteMovie(id);
     } catch (ex) {
       if (ex.response && ex.response.status === 404)
         toast.error("This movie has already been deleted");
+      this.setState({ movies: originalMovies });
     }
   };
 
@@ -95,7 +97,7 @@ class Movies extends Component {
   render() {
     const { length: count } = this.state.movies;
     const { pageSize, currentPage, sortColumn } = this.state;
-
+    const { user } = this.props;
     const { totalCount, data: movies } = this.getPagedData();
 
     return (
@@ -110,9 +112,11 @@ class Movies extends Component {
               />
             </div>
             <div className="col">
-              <Link to="/movies/new" className="btn btn-primary my-4">
-                New Movie
-              </Link>
+              {user && (
+                <Link to="/movies/new" className="btn btn-primary my-4">
+                  New Movie
+                </Link>
+              )}
               <p>Showing {totalCount} movies in the database.</p>
               <SearchBox
                 value={this.state.searchQuery}
